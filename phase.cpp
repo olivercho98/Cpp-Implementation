@@ -72,31 +72,11 @@ PhaseCongruency::PhaseCongruency(Size _size, size_t _nscale, size_t _norient)
     Mat angular = Mat::zeros(dft_M, dft_N, MAT_TYPE);
     std::vector<Mat> gabor(nscale);
 
-    //=============================Initialization of radii(Edited)============================
-
+    
     //Matrix values contain *normalised* radius
     // values ranging from 0 at the centre to
     // 0.5 at the boundary.
-    /*
-    int r;
-    const int dft_M_2 = dft_M / 2;  //cy
-    const int dft_N_2 = dft_N / 2;  //cx
-    if (dft_M > dft_N) r = dft_N_2;
-    else r = dft_M_2;
-    const double dr = 1.0 / static_cast<double>(r);
-    for (int row = dft_M_2 - r; row < dft_M_2 + r; row++)
-    {
-        auto radius_row = radius.ptr<double>(row);
-        for (int col = dft_N_2 - r; col < dft_N_2 + r; col++)
-        {
-            int m = (row - dft_M_2);  //y-cy
-            int n = (col - dft_N_2);  //x-cx
-            radius_row[col] = sqrt(static_cast<double>(m * m + n * n)) * dr;
-        }
-    }
-    */
-
-    //*
+    
     const int dft_M_2 = floor(dft_M / 2);  //cy
     const int dft_N_2 = floor(dft_N / 2);  //cx
     //int r;
@@ -113,102 +93,37 @@ PhaseCongruency::PhaseCongruency(Size _size, size_t _nscale, size_t _norient)
         {
             double m = (row - dft_M_2);  //y-cy
             double n = (col - dft_N_2);  //x-cx
-            //printf("m:%f, n:%f\n", m, n);
+            
             m = m * dr_y;
             n = n * dr_x;
-            if (row == 0 && col == 0)
-            {
-                printf("m:%f, n:%f\n", m, n);
-            }
-            //printf("m:%f, n:%f\n", m, n);
+            
             radius_row[col] = sqrt(static_cast<double>(m * m + n * n));
         }
     }
-    //*/
-    //========================================================================================
-
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
     radius.at<double>(dft_M_2, dft_N_2) = 1.0;  //radius[cy, cx] = 1
-    //radius.at<double>(0, 0) = 1.0;  //radius[cy, cx] = 1
-
-    /*
-    for (int row = 0; row < dft_M; row++)
-    {
-        for (int col = 0; col < dft_N; col++)
-        {
-            printf("the [%d][%d] of radius:%f\n", row, col, radius.at<double>(row,col));
-        }
-    }
-    */
-
-    /*
-    for (int col = 0; col < dft_N; col++)
-    {
-        printf("the [0][%d] of radius:%f\n", col, radius.at<double>(0,col));
-    }
-    */
 
     normradius = radius * 1.0; //abs(x).max()*2, abs(x).max() is 0.5
     lp = normradius / pcc.cutOff;
     pow(lp, 30.0, lp);
     lp += Scalar::all(1.0);
-    //lp = radius * 2.5;
-    //pow(lp, 20.0, lp);
-    //lp += Scalar::all(1.0);
-
-//    for (int col = 0; col < dft_N; col++)
-//    {
-//        //printf("the [0][%d] of lp:%f\n", col, lp.at<double>(0,col));
-//    }
-
-    //radius.at<double>(dft_M_2, dft_N_2) = 1.0;  //radius[cy, cx] = 1
-
-    /*
-    for (int col = 0; col < dft_N; col++)
-    {
-        printf("the [0][%d] of lpfilter:%f\n", col, lp.at<double>(0,col));
-    }
-    */
-    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-
+    
     // The following implements the log-gabor transfer function.
     double mt = 1.0f;
-    //printf("1\n");
     for (int scale = 0; scale < nscale; scale++)
     {
-        //+++++++++++++++++++++++++++++++++++++++++++++++++
-        //double mult_s = pow(pcc.mult, scale);
-        //const double wavelength = pcc.minwavelength * mult_s;
         const double wavelength = pcc.minwavelength * mt;  //wavelength = minWavelength*mult*s
-        //printf("the [%d] times of wavelength:%f\n", scale, wavelength);
-        //+++++++++++++++++++++++++++++++++++++++++++++++++
+        
         gabor[scale] = radius * wavelength;
         log(gabor[scale], gabor[scale]);
         pow(gabor[scale], 2.0, gabor[scale]); //log(radius/fo)**2
         gabor[scale] *= pcc.sigma;
         exp(gabor[scale], gabor[scale]);
-        if (scale == 0)
-        {
-            for (int col = 0; col < dft_N; col++)
-            {
-                //printf("1\n");
-                //printf("the [0] row of Gabor[0] before multiplied with lp:%f\n", gabor[scale].at<double>(0,col));
-            }
-        }
-        //=====================
+        
         divide(gabor[scale], lp, gabor[scale]);  //logGabor*lowpassbutterworth
-        //gabor[scale].at<double>(0, 0) = 0.0;
         gabor[scale].at<double>(dft_M_2, dft_N_2) = 0.0;
-        //divide(gabor[scale], lp, gabor[scale]);  //logGabor*lowpassbutterworth
-        //In python lp is reversed and here not, so use divide.
-        //======================
         mt = mt * pcc.mult;
     }
-//    for (int col = 0; col < dft_N; col++)
-//    {
-//        printf("the [0][%d] of gabor[0]:%f\n", col, gabor[0].at<double>(0,col));
-//    }
 
     const double angle_const = static_cast<double>(M_PI) / static_cast<double>(norient);  //pi/6
     for (int ori = 0; ori < norient; ori++)
@@ -220,11 +135,8 @@ PhaseCongruency::PhaseCongruency(Size _size, size_t _nscale, size_t _norient)
             auto angular_row = angular.ptr<double>(i);
             for (int j = 0; j < dft_N; j++)  //ncols
             {
-                //++++++++++++++++++++++++++++++
                 double m = atan2(-((double)i / (double)dft_M - 0.5), (double)j / (double)dft_N - 0.5);
-                // theta in python version
-                //double m = atan2(-((double)j / (double)dft_N - 0.5), (double)i / (double)dft_M - 0.5);
-                //++++++++++++++++++++++++++++++
+
                 double s = sin(m);
                 double c = cos(m);
                 m = s * cos(angl) - c * sin(angl);
@@ -235,33 +147,15 @@ PhaseCongruency::PhaseCongruency(Size _size, size_t _nscale, size_t _norient)
                 //dtheta
 
                 angular_row[j] = (cos(min(s * (double)norient * 0.5, M_PI)) + 1.0) * 0.5;
-                // In this part,min(s * (double)norient * 0.5, M_PI) means new dtheta correspondingly,
-                //and angular_row is the "spread".
+                // In this part, min(s * (double)norient * 0.5, M_PI) means new dtheta correspondingly,
+                // and angular_row is the "spread".
             }
         }
-//        if(ori == 0)
-//        {
-//            for (int col = 0; col < dft_N; col++)
-//            {
-//                printf("the [0][%d] of angular:%.15f\n", col, angular.at<double>(0,col));
-//            }
-//        }
 
         for (int scale = 0; scale < nscale; scale++)
         {
             multiply(gabor[scale], angular, matAr[0]); //Product of the two components.
             //the corresponding "filter"
-
-//            if(ori == 0)
-//            {
-//                if (scale == 0)
-//                {
-//                    for (int col = 0; col < dft_N; col++)
-//                    {
-//                        printf("the [145][%d] of MatAr:%.15f\n", col, matAr[0].at<double>(145,col));
-//                    }
-//                }
-//            }
 
             merge(matAr, 2, filter[nscale * ori + scale]);
             // Here, problem with merge()
@@ -269,10 +163,6 @@ PhaseCongruency::PhaseCongruency(Size _size, size_t _nscale, size_t _norient)
         }//scale
     }//orientation
     //Filter ready
-//    for (int col = 0; col < dft_N; col++)
-//    {
-//        printf("the [0][%d] of filter[0*ori+0]:%.15f\n", col, filter[0].at<Vec2d>(0,col)[0]);
-//    }
 }
 
 void PhaseCongruency::setConst(PhaseCongruencyConst _pcc)
