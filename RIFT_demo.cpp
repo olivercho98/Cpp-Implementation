@@ -64,7 +64,7 @@ int main()
 
     for (int i: temple_index_unique)
     {
-        new_matches.push_back(matches[i]);//matchesµƒŒ Ã‚
+        new_matches.push_back(matches[i]); //matches
     }
     matches = new_matches;
     
@@ -77,24 +77,24 @@ int main()
         }
     }
 
-    //ransac
-    std::vector<cv::DMatch> InlierMatches;//∂®“Âƒ⁄µ„ºØ∫œ
-    std::vector<cv::Point2f> p1, p2;//œ»∞—keypoint◊™ªªŒ™Point∏Ò Ω
+    // Applying ransac
+    std::vector<cv::DMatch> InlierMatches;
+    std::vector<cv::Point2f> p1, p2;
     for (int i = 0; i < match.size(); i++)
     {
-        p1.push_back(IM1.kps[match[i].queryIdx].pt); // pt «position
+        p1.push_back(IM1.kps[match[i].queryIdx].pt); // pt position
         p2.push_back(IM2.kps[match[i].trainIdx].pt);
     }
     
-    //RANSAC FindFundamentalÃﬁ≥˝¥ÌŒÛµ„
-    std::vector<uchar> RANSACStatus;//”√“‘±Íº«√ø“ª∏ˆ∆•≈‰µ„µƒ◊¥Ã¨£¨µ»”⁄0‘ÚŒ™Õ‚µ„£¨µ»”⁄1‘ÚŒ™ƒ⁄µ„°£
-    cv::findFundamentalMat(p1, p2, RANSACStatus, CV_FM_RANSAC);//p1 p2±ÿ–ÎŒ™float–Õ
+    // RANSAC FindFundamental Matrix
+    std::vector<uchar> RANSACStatus;
+    cv::findFundamentalMat(p1, p2, RANSACStatus, CV_FM_RANSAC); // p1 and p2 denote the point locations
     printf("findFundamentalMat_finished. Line:%d in main.\n", __LINE__);
     for (int i = 0; i < match.size(); i++)
     {
         if (RANSACStatus[i] != 0)
         {
-            InlierMatches.push_back(match[i]); //≤ªµ»”⁄0µƒ «ƒ⁄µ„
+            InlierMatches.push_back(match[i]); // Preserve inlier matches
         }
     }
     
