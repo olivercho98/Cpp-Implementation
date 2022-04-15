@@ -24,12 +24,4 @@ private:
     int xim, yim;
     Mat CS;
     Mat des;
-    //Mat RIFT_des;
-    //Mat MIM, MIM_Xsec;
-    //std::vector<int> MIM_x;
-    //float hrange[2] = {0, 255};
-    //const float* histRange[1] = { hrange };
-
-    // potential problems
-
 };
