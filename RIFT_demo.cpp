@@ -22,8 +22,8 @@ float RATIO = 1;
 
 int main()
 {
-    Mat im2 = imread("/home/pcy/RIFT/CropImage1.jpg");
-    Mat im1 = imread("/home/pcy/RIFT/IRImage3.jpg");
+    Mat im1 = imread("im1.jpg");
+    Mat im2 = imread("im2.jpg");
 
     //=======================================
     resize(im2, im2, im1.size(), INTER_CUBIC);
