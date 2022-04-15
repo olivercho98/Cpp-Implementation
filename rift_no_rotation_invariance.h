@@ -26,14 +26,6 @@ using namespace cv;
 #include<opencv2/xfeatures2d.hpp>
 using namespace cv::xfeatures2d;
 
-/*
-struct keyPoint
-{
-    Mat des;
-    Mat kps;
-};
-*/
-
 class rift_no_rotation_invariance
 {
 public:
@@ -48,11 +40,7 @@ public:
     Mat eo_single;
     std::vector<cv::Mat> eo;
 private:
-    //int thre = 40;
     int thre = 5;
     Mat im1_edges, im1_corners, im1_gray, M1_BGR, M1_F;
-    //Mat M1;
     Mat des_m1;
-    //std::vector<KeyPoint> keypoints1;
-    //std::vector<KeyPoint> keypoints2;
 };
