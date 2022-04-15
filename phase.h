@@ -51,8 +51,6 @@ public:
     void calc(cv::InputArray _src, std::vector<cv::Mat> &_pc);
     void feature(std::vector<cv::Mat> &_pc, cv::OutputArray _edges, cv::OutputArray _corners);
     void feature(cv::InputArray _src, cv::OutputArray _edges, cv::OutputArray _corners);
-    //std::vector<vector<cv::Mat> >eo = std::vector<vector<cv::Mat> >(6, vector<Mat>(4));
-    //std::vector<vector<cv::Mat> > eo;
     std::vector<cv::Mat> eo;
     cv::Mat maxMoment;
 
@@ -64,6 +62,4 @@ private:
     PhaseCongruencyConst pcc;
 
     std::vector<cv::Mat> filter;
-
-    //Mat s1, s2, s3, s4, d1, d2, d3, d4;
 };
