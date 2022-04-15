@@ -79,11 +79,7 @@ PhaseCongruency::PhaseCongruency(Size _size, size_t _nscale, size_t _norient)
     
     const int dft_M_2 = floor(dft_M / 2);  //cy
     const int dft_N_2 = floor(dft_N / 2);  //cx
-    //int r;
-    //int y_norm = dft_M_2;
-    //int x_norm = dft_N_2;
-    //if (dft_M > dft_N) r = dft_N_2;
-    //else r = dft_M_2;
+    
     const double dr_y = 1.0 / static_cast<double>(dft_M);
     const double dr_x = 1.0 / static_cast<double>(dft_N);
     for (int row = 0; row < dft_M; row++)
@@ -187,11 +183,6 @@ void PhaseCongruency::calc(InputArray _src, std::vector<cv::Mat> &_pc)
 
     _pc.resize(norient);
 
-    //std::vector<Mat> eo(nscale);
-    // THE eo. And here I expand it to a (o,s) vector according to former matlab version.
-    //std::vector<vector<Mat> >eo(norient, vector<Mat>(nscale));
-    // New update: defined in header file.
-    //std::vector<vector<cv::Mat> >eo = std::vector<vector<cv::Mat> >(6, vector<Mat>(4));
     std::vector<cv::Mat> trans(nscale);
 
     Mat complex[2];
@@ -226,12 +217,9 @@ void PhaseCongruency::calc(InputArray _src, std::vector<cv::Mat> &_pc)
             // filtered is the matrix for result
             dft(filtered, filtered, DFT_INVERSE);
             // then do the IFFT and still save in "filtered"
-            //filtered(Rect(0, 0, width, height)).copyTo(eo[o][scale]);
             trans[scale] = filtered(Rect(0, 0, width, height)).clone();
-            //filtered(Rect(0, 0, width, height)).copyTo(trans[scale]);
             //Rect() create a rectangle with the size of (width,height), size of the picture
             eo.push_back(trans[scale]);
-            //printf("type of trans:%d, Line:%d.\n", trans[scale].type(), __LINE__);
 
             split(trans[scale], complex);
             Mat eo_mag;
@@ -248,17 +236,12 @@ void PhaseCongruency::calc(InputArray _src, std::vector<cv::Mat> &_pc)
                 tau.val[0] = tau.val[0] / sqrt(log(4.0));
                 auto mt = 1.0 * pow(pcc.mult, nscale);
                 auto totalTau = tau.val[0] * (1.0 - 1.0 / mt) / (1.0 - 1.0 / pcc.mult);
-                //totalTau:python Line 327
                 auto m = totalTau * sqrt(M_PI / 2.0);
                 //EstNoiseEnergyMean
                 auto n = totalTau * sqrt((4 - M_PI) / 2.0);
                 //EstNoiseEnergySigma: values of noise energy
                 noise = m + pcc.k * n;
-                // T: noise threshold. Python line 335
-
-                //xnoise = 0;
-                //complex[0] -= xnoise;
-                //max(complex[0], 0.0, complex[0]);
+                // T: noise threshold.
                 //===========================================================
 
                 eo_mag.copyTo(maxAn);
@@ -268,16 +251,12 @@ void PhaseCongruency::calc(InputArray _src, std::vector<cv::Mat> &_pc)
             }
             else
             {
-                //complex[0] -= xnoise;
-                //max(complex[0], 0.0, complex[0]);
                 add(sumAn, eo_mag, sumAn);
                 max(eo_mag, maxAn, maxAn);
                 add(sumRe, complex[0], sumRe);
                 add(sumIm, complex[1], sumIm);
             }
-            //eo.push_back(trans[scale]);
         } // next scale
-        //eo.push_back(trans);
 
         magnitude(sumRe, sumIm, xEnergy);
         xEnergy += pcc.epsilon;
@@ -298,13 +277,6 @@ void PhaseCongruency::calc(InputArray _src, std::vector<cv::Mat> &_pc)
             add(energy, complex[0], energy);
             multiply(complex[1], sumIm, complex[1]);
             add(energy, complex[1], energy);
-            /*if (o == 0 && scale == 2)
-            {
-                energy -= noise / norient;
-                max(energy, 0.0, energy);
-                normalize(energy, tmp, 0, 1, NORM_MINMAX);
-                imshow("energy", tmp);
-            }*/
         } //next scale
         trans.clear();
 
